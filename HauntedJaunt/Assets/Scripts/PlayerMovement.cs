@@ -10,7 +10,17 @@ public class PlayerMovement : MonoBehaviour
     Vector3 m_Movement;
     Quaternion m_Rotation = Quaternion.identity; 
 
-    public float turnSpeed = 20;
+    public float turnSpeed = 20f;
+
+    // Interpolation speed manipulation variables
+    public float interpolated_speed;
+    public float upper_speed = 1.5f;
+
+    // Interpolation function
+    float Interpolate(float a, float b, float f)
+    {
+        return (1 - f) * a + f * b;  
+    }
 
     void Start()
     {
@@ -38,11 +48,13 @@ public class PlayerMovement : MonoBehaviour
         // If Lemon is walking play audio, else do not
         if(isWalking)
         {
+            interpolated_speed = Interpolate(interpolated_speed, upper_speed, .01f);
             if(!m_AudioSource.isPlaying)
             {
                 m_AudioSource.Play();
             }
         } else {
+            interpolated_speed = 0f;
             m_AudioSource.Stop();
         }
 
@@ -57,7 +69,7 @@ public class PlayerMovement : MonoBehaviour
     // Moves our animated player character
     void OnAnimatorMove()
     {
-        m_Rigidbody.MovePosition(m_Rigidbody.position + m_Movement * m_Animator.deltaPosition.magnitude);
+        m_Rigidbody.MovePosition(m_Rigidbody.position + m_Movement * m_Animator.deltaPosition.magnitude * interpolated_speed);
         m_Rigidbody.MoveRotation(m_Rotation);
     }
 }
